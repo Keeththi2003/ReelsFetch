@@ -1,4 +1,4 @@
-import snapsave from '../snapsave-downloader.js';
+import snapsave from '../snapsave-downloader/src/index.js';
 
 export default async function handler(req, res) {
   if (req.method !== 'GET') {
