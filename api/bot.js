@@ -1,5 +1,5 @@
-import TelegramBot from 'node-telegram-bot-api';
-import axios from 'axios';
+const TelegramBot = require('node-telegram-bot-api');
+const axios = require('axios');
 
 const token = process.env.TELEGRAM_TOKEN || 'your-token-here'; 
 const bot = new TelegramBot(token);
