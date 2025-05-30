@@ -1,8 +1,52 @@
 const TelegramBot = require('node-telegram-bot-api');
-const axios = require('axios');
+const https = require('https');
+const http = require('http');
+const { URL } = require('url');
 
-const token = process.env.TELEGRAM_TOKEN || 'your-token-here'; 
+const token = process.env.TELEGRAM_TOKEN || 'your-token-here';
 const bot = new TelegramBot(token);
+
+function fetchJSON(urlStr) {
+  return new Promise((resolve, reject) => {
+    const url = new URL(urlStr);
+    const lib = url.protocol === 'https:' ? https : http;
+
+    const req = lib.get(url, (res) => {
+      let data = '';
+      res.on('data', (chunk) => (data += chunk));
+      res.on('end', () => {
+        try {
+          resolve(JSON.parse(data));
+        } catch (err) {
+          reject(err);
+        }
+      });
+    });
+
+    req.on('error', reject);
+    req.end();
+  });
+}
+
+function fetchBuffer(urlStr) {
+  return new Promise((resolve, reject) => {
+    const url = new URL(urlStr);
+    const lib = url.protocol === 'https:' ? https : http;
+
+    const req = lib.get(
+      url,
+      { headers: { 'User-Agent': 'Mozilla/5.0' } },
+      (res) => {
+        const chunks = [];
+        res.on('data', (chunk) => chunks.push(chunk));
+        res.on('end', () => resolve(Buffer.concat(chunks)));
+      }
+    );
+
+    req.on('error', reject);
+    req.end();
+  });
+}
 
 export default async function handler(req, res) {
   if (req.method !== 'POST') {
@@ -10,11 +54,10 @@ export default async function handler(req, res) {
   }
 
   const update = req.body;
+
   try {
-    // Process the update (this just parses, no event handlers here)
     await bot.processUpdate(update);
 
-    // Now manually handle message updates:
     if (update.message && update.message.text) {
       const chatId = update.message.chat.id;
       const text = update.message.text;
@@ -28,36 +71,33 @@ export default async function handler(req, res) {
       await bot.sendMessage(chatId, 'Fetching video...');
 
       try {
-        const response = await axios.get('https://your-api-host.com/igdl', {
-          params: { url: text }
-        });
+        // Replace this with your actual API endpoint
+        const apiUrl = `https://your-api-host.com/igdl?url=${encodeURIComponent(text)}`;
+        const response = await fetchJSON(apiUrl);
 
-        const videoUrl = response.data.url.data[0].url;
+        const videoUrl = response.url?.data?.[0]?.url;
 
         if (!videoUrl) {
           await bot.sendMessage(chatId, 'Could not retrieve video. Try again later.');
           return res.status(200).end();
         }
 
-        const videoRes = await axios.get(videoUrl, {
-          responseType: 'arraybuffer',
-          headers: { 'User-Agent': 'Mozilla/5.0' }
-        });
+        const videoBuffer = await fetchBuffer(videoUrl);
 
-        await bot.sendVideo(chatId, Buffer.from(videoRes.data), {
+        await bot.sendVideo(chatId, videoBuffer, {
           filename: 'video.mp4',
-          contentType: 'video/mp4'
+          contentType: 'video/mp4',
         });
 
-      } catch (error) {
-        console.error('Error:', error.message);
+      } catch (err) {
+        console.error('Error during download:', err.message);
         await bot.sendMessage(chatId, 'An error occurred while processing your request.');
       }
     }
 
     res.status(200).end();
-  } catch (error) {
-    console.error('Failed to process update:', error);
+  } catch (err) {
+    console.error('Failed to process update:', err.message);
     res.status(500).end();
   }
 }
