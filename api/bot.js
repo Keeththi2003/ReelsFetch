@@ -3,7 +3,7 @@ const https = require('https');
 const http = require('http');
 const { URL } = require('url');
 
-const token = process.env.TELEGRAM_TOKEN || 'your-token-here';
+const token = '7071399955:AAHPYyUBgDIcbVmKff6tEkV1advBar5vjfo';
 const bot = new TelegramBot(token);
 
 function fetchJSON(urlStr) {
@@ -72,7 +72,7 @@ export default async function handler(req, res) {
 
       try {
         // Replace this with your actual API endpoint
-        const apiUrl = `https://your-api-host.com/igdl?url=${encodeURIComponent(text)}`;
+        const apiUrl = `https://reels-fetch.vercel.app/api/server?url=${encodeURIComponent(text)}`;
         const response = await fetchJSON(apiUrl);
 
         const videoUrl = response.url?.data?.[0]?.url;
