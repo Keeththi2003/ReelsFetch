@@ -1,52 +1,63 @@
 import TelegramBot from 'node-telegram-bot-api';
 import axios from 'axios';
 
-const token = '7071399955:AAHPYyUBgDIcbVmKff6tEkV1advBar5vjfo';
+const token = process.env.TELEGRAM_TOKEN || 'your-token-here'; 
 const bot = new TelegramBot(token);
 
 export default async function handler(req, res) {
-  if (req.method === 'POST') {
-    bot.processUpdate(req.body);
-    return res.status(200).end();
+  if (req.method !== 'POST') {
+    return res.status(405).send('Method Not Allowed');
   }
 
-  res.status(405).send('Method Not Allowed');
-}
-
-// Handle message events globally
-bot.on('message', async (msg) => {
-  const chatId = msg.chat.id;
-  const text = msg.text;
-
-  if (!text.startsWith('http') || !text.includes('instagram.com')) {
-    return bot.sendMessage(chatId, 'Please send a valid Instagram video URL.');
-  }
-
-  bot.sendChatAction(chatId, 'upload_video');
-  bot.sendMessage(chatId, 'Fetching video...');
-
+  const update = req.body;
   try {
-    const response = await axios.get('https://your-api-host.com/igdl', {
-      params: { url: text }
-    });
+    // Process the update (this just parses, no event handlers here)
+    await bot.processUpdate(update);
 
-    const videoUrl = response.data.url.data[0].url;
+    // Now manually handle message updates:
+    if (update.message && update.message.text) {
+      const chatId = update.message.chat.id;
+      const text = update.message.text;
 
-    if (!videoUrl) {
-      return bot.sendMessage(chatId, 'Could not retrieve video. Try again later.');
+      if (!text.startsWith('http') || !text.includes('instagram.com')) {
+        await bot.sendMessage(chatId, 'Please send a valid Instagram video URL.');
+        return res.status(200).end();
+      }
+
+      await bot.sendChatAction(chatId, 'upload_video');
+      await bot.sendMessage(chatId, 'Fetching video...');
+
+      try {
+        const response = await axios.get('https://your-api-host.com/igdl', {
+          params: { url: text }
+        });
+
+        const videoUrl = response.data.url.data[0].url;
+
+        if (!videoUrl) {
+          await bot.sendMessage(chatId, 'Could not retrieve video. Try again later.');
+          return res.status(200).end();
+        }
+
+        const videoRes = await axios.get(videoUrl, {
+          responseType: 'arraybuffer',
+          headers: { 'User-Agent': 'Mozilla/5.0' }
+        });
+
+        await bot.sendVideo(chatId, Buffer.from(videoRes.data), {
+          filename: 'video.mp4',
+          contentType: 'video/mp4'
+        });
+
+      } catch (error) {
+        console.error('Error:', error.message);
+        await bot.sendMessage(chatId, 'An error occurred while processing your request.');
+      }
     }
 
-    const videoRes = await axios.get(videoUrl, {
-      responseType: 'arraybuffer',
-      headers: { 'User-Agent': 'Mozilla/5.0' }
-    });
-
-    await bot.sendVideo(chatId, Buffer.from(videoRes.data), {
-      filename: 'video.mp4',
-      contentType: 'video/mp4'
-    });
+    res.status(200).end();
   } catch (error) {
-    console.error('Error:', error.message);
-    bot.sendMessage(chatId, 'An error occurred while processing your request.');
+    console.error('Failed to process update:', error);
+    res.status(500).end();
   }
-});
+}
