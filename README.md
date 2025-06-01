@@ -15,7 +15,7 @@ ReelsFetch is a Telegram bot that allows users to download **Instagram video ree
 
 ## 🚀 Demo
 
-Try it on Telegram: [@ReelsFetch](https://t.me/Reelsfetch)  
+Try it on Telegram: [@ReelFetchBot](https://t.me/ReelFetchBot)  
 
 ---
 
