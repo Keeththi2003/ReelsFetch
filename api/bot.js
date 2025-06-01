@@ -61,6 +61,14 @@ export default async function handler(req, res) {
     if (update.message && update.message.text) {
       const chatId = update.message.chat.id;
       const text = update.message.text;
+      const user = update.message.from;
+      const username = user.username ? `@${user.username}` : user.first_name;
+
+
+      if (text.startsWith('Hi') || text.includes('Hello')) {
+        await bot.sendMessage(chatId, `Hello ${username}!`);
+        return res.status(200).end();
+      }
 
       if (!text.startsWith('http') || !text.includes('instagram.com')) {
         await bot.sendMessage(chatId, 'Please send a valid Instagram video URL.');
@@ -71,7 +79,6 @@ export default async function handler(req, res) {
       await bot.sendMessage(chatId, 'Fetching video...');
 
       try {
-        // Replace this with your actual API endpoint
         const apiUrl = `https://appsail-10100207863.development.catalystappsail.com/igdl?url=${encodeURIComponent(text)}`;
         const response = await fetchJSON(apiUrl);
 
@@ -88,6 +95,9 @@ export default async function handler(req, res) {
           filename: 'video.mp4',
           contentType: 'video/mp4',
         });
+
+        await bot.sendMessage(chatId, '🌟 Give me a star on GitHub: https://github.com/Keeththi2003/ReelsFetch');
+        await bot.sendMessage(chatId, '🔗 Connect with me on LinkedIn: https://www.linkedin.com/in/k_keeththigan/');
 
       } catch (err) {
         console.error('Error during download:', err.message);
