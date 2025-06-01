@@ -2,8 +2,10 @@ const TelegramBot = require('node-telegram-bot-api');
 const https = require('https');
 const http = require('http');
 const { URL } = require('url');
+require('dotenv').config();
 
-const token = '7071399955:AAHPYyUBgDIcbVmKff6tEkV1advBar5vjfo';
+
+const token = process.env.BOT_TOKEN;
 const bot = new TelegramBot(token);
 
 function fetchJSON(urlStr) {
@@ -66,7 +68,7 @@ export default async function handler(req, res) {
 
 
       if (text.startsWith('Hi') || text.includes('Hello')) {
-        await bot.sendMessage(chatId, `Hello ${username}!`);
+        await bot.sendMessage(chatId, `👋 Hello ${username} !`);
         return res.status(200).end();
       }
 
@@ -79,7 +81,7 @@ export default async function handler(req, res) {
       await bot.sendMessage(chatId, 'Fetching video...');
 
       try {
-        const apiUrl = `https://appsail-10100207863.development.catalystappsail.com/igdl?url=${encodeURIComponent(text)}`;
+        const apiUrl = `${process.env.API_BASE_URL}?url=${encodeURIComponent(text)}`;
         const response = await fetchJSON(apiUrl);
 
         const videoUrl = response.url?.data?.[0]?.url;
