@@ -99,7 +99,7 @@ export default async function handler(req, res) {
         });
 
         await bot.sendMessage(chatId, '🌟 Give me a star on GitHub: https://github.com/Keeththi2003/ReelsFetch');
-        await bot.sendMessage(chatId, '🔗 Connect with me on LinkedIn: https://www.linkedin.com/in/k_keeththigan/');
+        await bot.sendMessage(chatId, '🔗 Connect with me on LinkedIn: https://www.linkedin.com/in/k-keeththigan/');
 
       } catch (err) {
         console.error('Error during download:', err.message);
