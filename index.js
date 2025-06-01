@@ -3,7 +3,7 @@ const axios = require('axios');
 const cheerio = require('cheerio');
 const app = express();
 const snapsave = require('./snapsave-downloader');
-const port = 4000;
+const port = process.env.X_ZOHO_CATALYST_LISTEN_PORT || 4000;
 
 app.get('/', (req, res) => {
   res.json({ message: 'Hello World!' });

@@ -72,7 +72,7 @@ export default async function handler(req, res) {
 
       try {
         // Replace this with your actual API endpoint
-        const apiUrl = `https://reels-fetch.vercel.app/api/server?url=${encodeURIComponent(text)}`;
+        const apiUrl = `https://appsail-10100207863.development.catalystappsail.com?url=${encodeURIComponent(text)}`;
         const response = await fetchJSON(apiUrl);
 
         const videoUrl = response.url?.data?.[0]?.url;

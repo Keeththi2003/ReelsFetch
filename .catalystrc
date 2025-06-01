@@ -1,0 +1,30 @@
+{
+  "defaults": {
+    "project": 1,
+    "env": 1
+  },
+  "actives": {
+    "project": 1,
+    "env": 1
+  },
+  "projects": [
+    {
+      "idx": 1,
+      "id": "32668000000012001",
+      "name": "ReelsFetch",
+      "domain": {
+        "id": "10100207863",
+        "name": "reelsfetch-889256913.development"
+      },
+      "timezone": "Asia/Colombo",
+      "env": [
+        {
+          "idx": 1,
+          "id": "889256913",
+          "name": "Development",
+          "type": 3
+        }
+      ]
+    }
+  ]
+}
